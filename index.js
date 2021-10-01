@@ -1,8 +1,10 @@
+require('dotenv').config()
 const { response } = require('express')
 const express = require('express')
 const morgan = require('morgan')
 const app = express()
 const cors = require('cors')
+const Person = require('./models/person')
 
 app.use(cors())
 app.use(express.static('build'))
@@ -42,7 +44,9 @@ let persons = [
   ]
 
 app.get('/api/persons', (req, res) => {
+  Person.find({}).then(persons => {
     res.json(persons)
+  })
 })
 
 app.get('/api/info', (req, res) => {
@@ -64,10 +68,9 @@ app.get('/api/persons/:id', (req, res) => {
 })
 
 app.delete('/api/persons/:id', (req, res) => {
-  const id =Number(req.params.id)
-  const person = persons.find(person => person.id === id)
-  persons = persons.filter(person => person.id !== id)
-  res.status(204).end()
+  Person.findById(req.params.id).then(person => {
+    res.json(person)
+  })
 })
 
 const generateId = () => {
@@ -77,7 +80,7 @@ const generateId = () => {
 
 app.post('/api/persons', (req,res) => {  
   const body = req.body
-  if (!body.name || !body.number) {
+  if ((body.name || body.number) === undefined) {
     return res.status(400).json({
       error: 'Name or number missing'
     })
@@ -87,14 +90,15 @@ app.post('/api/persons', (req,res) => {
       error: 'Name already exists. Pick a new name.'
     })
   }
-  const person = {
+  const person = new Person({
     id: generateId(),
     name: body.name,
     number: body.number
-  }
+  })
   
-  persons = persons.concat(person)
-  res.json(person)
+  person.save().then(savedPerson => {
+    res.json(savedPerson)
+  })
 })
 
 
@@ -103,7 +107,7 @@ app.post('/api/persons', (req,res) => {
 
 
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
