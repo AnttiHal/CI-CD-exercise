@@ -49,38 +49,44 @@ app.get('/api/persons', (req, res) => {
   })
 })
 
-app.get('/api/info', (req, res) => {
-    let date = new Date()
-    console.log(date)
-    res.send('<p>Phonebook has info for ' + persons.length + ' people.</p> ' + date)
-    
+app.get('/api/info', (req, res) => {    
+    Person.find({}).then(persons => {
+      res.send(`<p>${new Date()} <br> Phonebook has info for  ${persons.length}   people.</p> `)}
+    )
+    .catch (error => next(error))
 
 })
 
 app.get('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    const person = persons.find(person => person.id === id)
+  Person.findById(req.params.id)
+  .then(person => {
     if (person) {
       res.json(person)
     } else {
       res.status(404).end()
-    }    
+    }
+  }) 
+  .catch (error => next(error)) 
 })
 
-app.delete('/api/persons/:id', (req, res) => {
-  Person.findById(req.params.id).then(person => {
-    res.json(person)
+app.delete('/api/persons/:id', (req, res, next) => {
+  Person.findByIdAndRemove(req.params.id)
+  .then(result => {
+    res.status(204).end()
   })
+  .catch(error => next(error))
 })
+
+
 
 const generateId = () => {
   const id = Math.floor(Math.random()*100000)
   return id
 }
 
-app.post('/api/persons', (req,res) => {  
+app.post('/api/persons', (req,res, next) => {  
   const body = req.body
-  if ((body.name || body.number) === undefined) {
+  if (body.name === ''|| body.number === '') {
     return res.status(400).json({
       error: 'Name or number missing'
     })
@@ -99,12 +105,21 @@ app.post('/api/persons', (req,res) => {
   person.save().then(savedPerson => {
     res.json(savedPerson)
   })
+  .catch(error => next(error))
 })
 
+// middleware virheiden käsittelyyn
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error : 'malformatted id' })
+  } 
+  
+  
+  next(error)
+}
 
-
-
-
+app.use(errorHandler)
 
 
 const PORT = process.env.PORT
