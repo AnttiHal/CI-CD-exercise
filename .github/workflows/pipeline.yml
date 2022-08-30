@@ -1,0 +1,45 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  simple_deployment_pipeline:
+    #if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-20.04
+    env: 
+      MONGO_URI: ${{ secrets.MONGO_URI }} 
+      PORT: ${{secrets.PORT}}
+    steps: 
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '12.x'
+      - name: npm install    
+        run: npm install && cd client && npm install
+      - name: build
+        run: npm run build:client
+      - name: deploy
+        uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: "infinite-dusk-83611" #Must be unique in Heroku
+          heroku_email: "anttihalmetoja@gmail.com"
+          healthcheck: "infinite-dusk-83611.herokuapp.com/health"
+          checkstring: "ok"
+          
+      
+      
+  #tag_release:
+  #  needs: simple_deployment_pipeline
+  #  if: ${{ github.event_name == 'push' && !contains(join(github.commits.*.message, ' '), '#skip') }}
+  #  runs-on: ubuntu-20.04
+  #  steps:
+  #    - uses: actions/checkout@v3
+  #    - name: Bump version and push tag
+  #      uses: anothrNick/github-tag-action@1.36.0
+  #      env:
+  #        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #        DEFAULT_BUMP: patch
