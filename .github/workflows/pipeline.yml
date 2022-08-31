@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-20.04
     env: 
       SKIP_PREFLIGHT_CHECK: true
-      MONGO_URI: ${{ secrets.MONGODB_URI }} 
+      MONGODB_URI: ${{ secrets.MONGODB_URI }} 
       PORT: ${{secrets.PORT}}
     steps: 
       - uses: actions/checkout@v3
@@ -28,8 +28,6 @@ jobs:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: "infinite-dusk-83611" #Must be unique in Heroku
           heroku_email: "anttihalmetoja@gmail.com"
-          healthcheck: "infinite-dusk-83611.herokuapp.com/health"
-          checkstring: "ok"
           
       
       
