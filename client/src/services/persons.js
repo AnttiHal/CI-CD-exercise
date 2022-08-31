@@ -22,4 +22,6 @@ const del = (id) => {
   return request
 }
 
-export default { getAll, create, update, del}
+
+// eslint-disable-next-line
+export default { getAll, create, update, del }
