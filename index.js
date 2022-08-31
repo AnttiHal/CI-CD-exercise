@@ -10,6 +10,9 @@ app.use(express.static('./client/build'))
 morgan.token('body', (req,res) => {
   return req.method + res.statusCode + req.url + JSON.stringify(req.body)}
 )
+app.get('/health', (req, res) => {
+  res.send('ok')
+})
 app.use(express.json())
 app.use(morgan('tiny'))
 app.use(morgan(':body'))
