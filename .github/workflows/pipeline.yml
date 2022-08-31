@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    pull_request:
+    branches: [main]
+    types: [opened, synchronize]
 
 jobs:
   simple_deployment_pipeline:
@@ -20,15 +23,20 @@ jobs:
           node-version: '14.18.0'
       - name: npm install    
         run: npm install && cd client && npm install
+      - name: lint
+        run: npm run eslint
       - name: build
         run: npm run build:client
       - name: deploy
+        if: ${{ github.event_name == 'push' }}
         uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: "infinite-dusk-83611" #Must be unique in Heroku
           heroku_email: "anttihalmetoja@gmail.com"
-          
+          healthcheck: "https://infinite-dusk-83611.herokuapp.com/health"
+          checkstring: "ok"
+          rollbackonhealthcheckfailed: true
       
       
   #tag_release:
