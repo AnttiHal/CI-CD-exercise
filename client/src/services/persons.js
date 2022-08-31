@@ -22,4 +22,4 @@ const del = (id) => {
   return request
 }
 
-export { getAll, create, update, del}
+export default { getAll, create, update, del}
